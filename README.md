@@ -394,27 +394,38 @@ UPDATE_FREQUENCY = 1000            // Update setiap 1 detik
 
 ### **🏃 Mulai Cepat - Metode Tercepat**
 
-#### **1️⃣ Peluncuran Satu Klik**
+#### **1️⃣ Peluncuran Satu Klik (Recommended)**
 ```bash
-# Double-click pada file ini:
+# Metode paling aman - otomatis cleanup:
+python start_cryptsist.py
+
+# Atau gunakan batch file:
 launch_cryptsist_realtime.bat
 
-# Atau jalankan via PowerShell:
-.\launch_cryptsist_realtime.bat
+# Atau double-click pada file:
+launch_cryptsist_realtime.bat
 ```
 
-#### **2️⃣ Peluncuran Manual**
+#### **2️⃣ Peluncuran Manual (Advanced)**
 ```bash
-# Metode 1: Python launcher (Recommended)
+# Metode 1: Safe startup (Recommended)
+python start_cryptsist.py
+
+# Metode 2: Direct launcher (Advanced) 
 python main.py
 
-# Metode 2: Manual start semua komponen
+# Metode 3: Manual start semua komponen (Expert only)
 # Terminal 1 - Start server
 python server/mt5_server.py
 
 # Terminal 2 - Start bridge  
 python bridge/mt5_bridge.py
 ```
+
+### **🚨 Catatan Penting:**
+- **Selalu gunakan `start_cryptsist.py`** untuk startup yang aman
+- Script ini otomatis membersihkan port conflicts
+- Jika error port 10048, restart dan coba lagi
 
 ### **📊 Dashboard Monitoring**
 
@@ -670,6 +681,21 @@ Solusi:
 
 Perintah untuk test:
 python -c "import MetaTrader5 as mt5; print(mt5.initialize())"
+```
+
+#### **🌐 Masalah Port Conflict (Error 10048)**
+```
+Masalah: "[Errno 10048] error while attempting to bind on address"
+Solusi:
+1. Gunakan safe startup script: python start_cryptsist.py
+2. Atau manual cleanup:
+   - taskkill /F /IM python.exe
+   - taskkill /F /IM uvicorn.exe
+   - netstat -ano | findstr :8000
+3. Restart system jika masih bermasalah
+
+Cara terbaik:
+Selalu gunakan start_cryptsist.py atau launch_cryptsist_realtime.bat
 ```
 
 #### **🔑 Masalah Kunci API**

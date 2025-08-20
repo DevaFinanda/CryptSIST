@@ -10,8 +10,8 @@ echo.
 echo 📊 Starting CryptSIST Real-Time Analysis System...
 echo.
 
-REM Change to the script directory
-cd /d "E:\Kecerdasan Buatan\UAS\CryptoAgents"
+REM Change to the current script directory
+cd /d "%~dp0"
 
 echo 🔍 Checking Python environment...
 python --version
@@ -22,12 +22,19 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo 📡 Starting CryptSIST MT5 Server...
+echo 🧹 Cleaning up previous instances...
+taskkill /F /IM python.exe >nul 2>&1
+taskkill /F /IM uvicorn.exe >nul 2>&1
+timeout /t 3 /nobreak >nul
+
+echo.
+echo 📡 Starting CryptSIST with Safe Startup...
 echo 🌐 Server will be available at: http://localhost:8000
 echo 🎯 Real-time analysis endpoints ready
 echo.
 
-REM Start the MT5 server in background
+REM Start using safe startup script
+python start_cryptsist.py
 start "CryptSIST MT5 Server" /min cmd /c "python mt5_server.py"
 
 echo ⏳ Waiting for server to start...

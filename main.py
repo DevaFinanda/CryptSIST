@@ -10,6 +10,8 @@ import sys
 import subprocess
 import time
 import signal
+import socket
+import psutil
 from pathlib import Path
 
 # Add current directory and subdirectories to path
@@ -23,6 +25,50 @@ class MT5Launcher:
         self.server_process = None
         self.bridge_process = None
         self.running = False
+        self.server_port = 8000
+        
+    def check_port_available(self, port):
+        """Check if port is available"""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', port))
+                return True
+        except socket.error:
+            return False
+    
+    def kill_processes_using_port(self, port):
+        """Kill processes using specific port"""
+        try:
+            for proc in psutil.process_iter(['pid', 'name', 'connections']):
+                try:
+                    if proc.info['connections']:
+                        for conn in proc.info['connections']:
+                            if conn.laddr.port == port:
+                                print(f"🔫 Killing process {proc.info['pid']} ({proc.info['name']}) using port {port}")
+                                proc.kill()
+                                time.sleep(1)
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+        except Exception as e:
+            print(f"⚠️ Error killing processes: {e}")
+    
+    def cleanup_previous_instances(self):
+        """Clean up any previous instances"""
+        print("🧹 Cleaning up previous instances...")
+        
+        # Kill processes using our port
+        if not self.check_port_available(self.server_port):
+            print(f"⚠️ Port {self.server_port} is in use. Cleaning up...")
+            self.kill_processes_using_port(self.server_port)
+            time.sleep(2)
+            
+        # Double check
+        if not self.check_port_available(self.server_port):
+            print(f"❌ Unable to free port {self.server_port}. Please restart your computer or manually kill processes.")
+            return False
+            
+        print("✅ Cleanup completed")
+        return True
         
     def start_server(self):
         """Start MT5 server"""
@@ -96,6 +142,10 @@ class MT5Launcher:
         """Main run method"""
         print("🔷 CryptSIST MT5 Integration Launcher")
         print("=" * 50)
+        
+        # Cleanup previous instances first
+        if not self.cleanup_previous_instances():
+            return
         
         # Setup signal handlers
         def signal_handler(signum, frame):
