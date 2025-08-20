@@ -176,9 +176,7 @@ CryptSIST/
 ├── 📄 requirements.txt                           # 📦 Python dependencies
 ├── 📄 README.md                                  # 📖 Documentation (this file)
 ├── 📄 launch_cryptsist_realtime.bat             # 🏃 File mulai cepat batch
-├── 📄 CRYPTSIST_REALTIME_PRO_GUIDE.md          # 📚 Panduan lengkap pengguna
-├── 📄 MULTI_AGENT_ARCHITECTURE_DIAGRAM.md      # 🏗️ Dokumentasi arsitektur
-├── 📄 KERANGKA_PROYEK_PENELITIAN.md            # 🔬 Kerangka penelitian
+├── 📄 .gitignore                               # � Git ignore rules
 │
 ├── 📂 server/                                    # 🌐 Server Web FastAPI
 │   └── 📄 mt5_server.py                        # Server REST API utama
