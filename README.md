@@ -1,6 +1,8 @@
 # 🚀 CryptSIST - Sistem Trading Cryptocurrency Berbasis AI
 
-> **CryptSIST** (Cryptocurrency Sentiment Intelligence and Signal Trading) adalah sistem trading otomatis untuk cryptocurrency y### **📝 Penjelasan Komponen Utama**
+> **CryptSIST** (Cryptocurrency Sentiment Intelligence and Signal Trading) adalah sistem trading otomatis untuk cryptocurrency
+
+**📝 Penjelasan Komponen Utama**
 
 #### **🚀 Mesin Inti (`main.py`)**
 - **Orkestrator proses** - Mengatur semua komponen sistem
@@ -901,16 +903,6 @@ SOFTWARE.
 
 ---
 
-## 🏆 **Penghargaan**
-
-**🙏 Terima Kasih Khusus Kepada:**
-- **MetaQuotes** - Platform MetaTrader 5
-- **Groq** - API LLM yang canggih
-- **FastAPI** - Framework web modern
-- **Binance** - API exchange cryptocurrency
-- **NewsAPI** - Layanan agregasi berita
-- **Komunitas Open Source** - Berbagai library dan tools
-
 **📚 Paper Penelitian & Referensi:**
 - *"Multi-Agent Systems for Financial Trading"* - MIT Press
 - *"Sentiment Analysis in Cryptocurrency Markets"* - Journal of Finance
@@ -920,14 +912,8 @@ SOFTWARE.
 
 <div align="center">
 
-## ⭐ **Beri Bintang pada Repository Ini!**
-
-**Jika CryptSIST membantu Anda dalam trading, mohon berikan kami bintang! ⭐**
-
 [![GitHub stars](https://img.shields.io/github/stars/your-username/CryptSIST.svg?style=social&label=Star)](https://github.com/your-username/CryptSIST)
 [![GitHub forks](https://img.shields.io/github/forks/your-username/CryptSIST.svg?style=social&label=Fork)](https://github.com/your-username/CryptSIST/fork)
-
-**🚀 Selamat Trading dengan CryptSIST! 📈**
 
 *"Memberdayakan trader dengan insight berbasis AI untuk keputusan trading cryptocurrency yang lebih cerdas."*
 
