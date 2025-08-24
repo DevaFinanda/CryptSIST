@@ -26,6 +26,11 @@ from datetime import datetime
 import asyncio
 from typing import Dict, List, Optional
 
+from dependencies.enhanced_price_fetcher import EnhancedPriceFetcher
+from dependencies.sentiment_analyzer import CryptoSentimentAnalyzer
+from dependencies.simple_groq_client import SimpleGroqClient
+from dependencies.enhanced_signal_generator import EnhancedSignalGenerator
+
 # Import CryptSIST components (with fallbacks)
 price_fetcher_available = False
 sentiment_analyzer_available = False
