@@ -38,7 +38,18 @@ def wait_for_port_free(port, timeout=30):
 def kill_existing_processes():
     """Kill existing CryptSIST processes"""
     try:
-        # Windows
+        # Windows - Kill Python processes using port 8000
+        result = subprocess.run(['netstat', '-ano'], capture_output=True, text=True, check=False)
+        for line in result.stdout.splitlines():
+            if ':8000' in line and 'LISTENING' in line:
+                parts = line.split()
+                if len(parts) >= 5:
+                    pid = parts[-1]
+                    print(f"🔍 Found process using port 8000: PID {pid}")
+                    subprocess.run(['taskkill', '/F', '/PID', pid], 
+                                  capture_output=True, check=False)
+        
+        # Additional cleanup
         subprocess.run(['taskkill', '/F', '/IM', 'python.exe', '/FI', 'WINDOWTITLE eq *CryptSIST*'], 
                       capture_output=True, check=False)
         subprocess.run(['taskkill', '/F', '/IM', 'uvicorn.exe'], 

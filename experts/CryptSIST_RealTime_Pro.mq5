@@ -233,6 +233,9 @@ void GetCryptSISTAnalysis()
     string url = ServerURL + "/signal/" + Symbol();
     string response = HttpRequest(url);
     
+    Print("🔍 Requesting: ", url);
+    Print("📥 Response: ", StringLen(response) > 0 ? response : "NO RESPONSE");
+    
     if(StringLen(response) > 0)
     {
         ParseCryptSISTResponse(response);
@@ -241,6 +244,7 @@ void GetCryptSISTAnalysis()
     {
         // Fallback to technical analysis only
         currentAnalysis = "🔧 Technical Analysis Only";
+        Print("⚠️ Using fallback technical analysis");
     }
 }
 
@@ -249,26 +253,32 @@ void GetCryptSISTAnalysis()
 //+------------------------------------------------------------------+
 void ParseCryptSISTResponse(string response)
 {
+    Print("🔍 Parsing response: ", response);
+    
     // Simple JSON parsing (in production, use proper JSON library)
     if(StringFind(response, "\"signal\":\"BUY\"") >= 0)
     {
         currentSignal = SIGNAL_BUY;
         currentAnalysis = "🟢 CryptSIST: STRONG BUY";
+        Print("📊 Signal parsed: BUY");
     }
     else if(StringFind(response, "\"signal\":\"SELL\"") >= 0)
     {
         currentSignal = SIGNAL_SELL;
         currentAnalysis = "🔴 CryptSIST: STRONG SELL";
+        Print("📊 Signal parsed: SELL");
     }
     else if(StringFind(response, "\"signal\":\"HOLD\"") >= 0)
     {
         currentSignal = SIGNAL_HOLD;
         currentAnalysis = "🟡 CryptSIST: HOLD";
+        Print("📊 Signal parsed: HOLD");
     }
     else
     {
         currentSignal = SIGNAL_NONE;
         currentAnalysis = "⚪ CryptSIST: NO SIGNAL";
+        Print("📊 Signal parsed: NONE");
     }
     
     // Extract confidence
@@ -277,6 +287,12 @@ void ParseCryptSISTResponse(string response)
     {
         string confStr = StringSubstr(response, confStart + 13, 5);
         currentConfidence = StringToDouble(confStr);
+        Print("📊 Confidence: ", currentConfidence);
+    }
+    else
+    {
+        currentConfidence = 0.5; // Default confidence
+        Print("📊 Using default confidence: ", currentConfidence);
     }
     
     // Extract sentiment
@@ -319,10 +335,13 @@ void PerformTechnicalAnalysis(const MqlRates &rates[])
     ENUM_SIGNAL_TYPE techSignal = SIGNAL_NONE;
     double techConfidence = 0.0;
     
+    // Check if we have enough MACD data
+    bool hasMACD = ArraySize(macd) >= 2 && ArraySize(signal) >= 2;
+    
     // MA Cross strategy
     if(currentPrice > ma20 && ma20 > ma50 && rsi > 30 && rsi < 70)
     {
-        if(macd[0] > signal[0] && macd[1] <= signal[1])
+        if(hasMACD && macd[0] > signal[0] && macd[1] <= signal[1])
         {
             techSignal = SIGNAL_BUY;
             techConfidence = 0.7;
@@ -330,7 +349,7 @@ void PerformTechnicalAnalysis(const MqlRates &rates[])
     }
     else if(currentPrice < ma20 && ma20 < ma50 && rsi > 30 && rsi < 70)
     {
-        if(macd[0] < signal[0] && macd[1] >= signal[1])
+        if(hasMACD && macd[0] < signal[0] && macd[1] >= signal[1])
         {
             techSignal = SIGNAL_SELL;
             techConfidence = 0.7;
@@ -404,6 +423,15 @@ void ProcessNewSignal()
 //+------------------------------------------------------------------+
 void ExecuteTradingLogic()
 {
+    // Check if auto trading is actually enabled in MT5
+    bool isAutoTradingEnabled = TerminalInfoInteger(TERMINAL_TRADE_ALLOWED) && 
+                                MQLInfoInteger(MQL_TRADE_ALLOWED) && 
+                                AccountInfoInteger(ACCOUNT_TRADE_EXPERT) &&
+                                EnableAutoTrading; // Also check EA parameter
+    
+    if(!isAutoTradingEnabled)
+        return;
+        
     // Check daily trade limit
     if(dailyTradeCount >= MaxDailyTrades)
         return;
@@ -582,30 +610,56 @@ void ApplyTrailingStop()
 //+------------------------------------------------------------------+
 void CreateLiveDashboard()
 {
-    // Main dashboard background
+    // Main dashboard background with better design
     string bgName = dashboardPrefix + "Background";
     if(ObjectCreate(0, bgName, OBJ_RECTANGLE_LABEL, 0, 0, 0))
     {
         ObjectSetInteger(0, bgName, OBJPROP_XDISTANCE, DashboardX);
         ObjectSetInteger(0, bgName, OBJPROP_YDISTANCE, DashboardY);
-        ObjectSetInteger(0, bgName, OBJPROP_XSIZE, 350);
-        ObjectSetInteger(0, bgName, OBJPROP_YSIZE, 200);
-        ObjectSetInteger(0, bgName, OBJPROP_BGCOLOR, DashboardBgColor);
-        ObjectSetInteger(0, bgName, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+        ObjectSetInteger(0, bgName, OBJPROP_XSIZE, 320);
+        ObjectSetInteger(0, bgName, OBJPROP_YSIZE, 160);
+        ObjectSetInteger(0, bgName, OBJPROP_BGCOLOR, C'20,30,60'); // Dark blue
+        ObjectSetInteger(0, bgName, OBJPROP_BORDER_TYPE, BORDER_RAISED);
         ObjectSetInteger(0, bgName, OBJPROP_CORNER, CORNER_LEFT_UPPER);
-        ObjectSetInteger(0, bgName, OBJPROP_COLOR, clrWhite);
+        ObjectSetInteger(0, bgName, OBJPROP_COLOR, clrSteelBlue);
+        ObjectSetInteger(0, bgName, OBJPROP_WIDTH, 2);
     }
     
-    // Dashboard title
+    // Header background
+    string headerName = dashboardPrefix + "Header";
+    if(ObjectCreate(0, headerName, OBJ_RECTANGLE_LABEL, 0, 0, 0))
+    {
+        ObjectSetInteger(0, headerName, OBJPROP_XDISTANCE, DashboardX);
+        ObjectSetInteger(0, headerName, OBJPROP_YDISTANCE, DashboardY);
+        ObjectSetInteger(0, headerName, OBJPROP_XSIZE, 320);
+        ObjectSetInteger(0, headerName, OBJPROP_YSIZE, 28);
+        ObjectSetInteger(0, headerName, OBJPROP_BGCOLOR, C'0,120,215'); // Bright blue
+        ObjectSetInteger(0, headerName, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+        ObjectSetInteger(0, headerName, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+    }
+    
+    // Dashboard title - simplified
     string titleName = dashboardPrefix + "Title";
     if(ObjectCreate(0, titleName, OBJ_LABEL, 0, 0, 0))
     {
-        ObjectSetInteger(0, titleName, OBJPROP_XDISTANCE, DashboardX + 10);
-        ObjectSetInteger(0, titleName, OBJPROP_YDISTANCE, DashboardY + 10);
-        ObjectSetString(0, titleName, OBJPROP_TEXT, "🚀 CryptSIST Real-Time Pro");
-        ObjectSetString(0, titleName, OBJPROP_FONT, "Arial Bold");
+        ObjectSetInteger(0, titleName, OBJPROP_XDISTANCE, DashboardX + 15);
+        ObjectSetInteger(0, titleName, OBJPROP_YDISTANCE, DashboardY + 6);
+        ObjectSetString(0, titleName, OBJPROP_TEXT, "🚀 CryptSIST");
+        ObjectSetString(0, titleName, OBJPROP_FONT, "Arial Black");
         ObjectSetInteger(0, titleName, OBJPROP_FONTSIZE, 12);
         ObjectSetInteger(0, titleName, OBJPROP_COLOR, clrWhite);
+    }
+    
+    // Status indicator
+    string statusIndicator = dashboardPrefix + "StatusDot";
+    if(ObjectCreate(0, statusIndicator, OBJ_LABEL, 0, 0, 0))
+    {
+        ObjectSetInteger(0, statusIndicator, OBJPROP_XDISTANCE, DashboardX + 280);
+        ObjectSetInteger(0, statusIndicator, OBJPROP_YDISTANCE, DashboardY + 6);
+        ObjectSetString(0, statusIndicator, OBJPROP_TEXT, "🟢 LIVE");
+        ObjectSetInteger(0, statusIndicator, OBJPROP_FONTSIZE, 10);
+        ObjectSetInteger(0, statusIndicator, OBJPROP_COLOR, clrLime);
+        ObjectSetString(0, statusIndicator, OBJPROP_FONT, "Arial Bold");
     }
 }
 
@@ -614,106 +668,128 @@ void CreateLiveDashboard()
 //+------------------------------------------------------------------+
 void UpdateLiveDashboard()
 {
-    // Signal status
+    // Signal status with enhanced display
     string signalName = dashboardPrefix + "Signal";
     if(ObjectFind(0, signalName) < 0)
         ObjectCreate(0, signalName, OBJ_LABEL, 0, 0, 0);
     
-    ObjectSetInteger(0, signalName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, signalName, OBJPROP_YDISTANCE, DashboardY + 35);
+    ObjectSetInteger(0, signalName, OBJPROP_XDISTANCE, DashboardX + 15);
+    ObjectSetInteger(0, signalName, OBJPROP_YDISTANCE, DashboardY + 40);
     
     color signalColor = clrWhite;
-    if(currentSignal == SIGNAL_BUY) signalColor = BuySignalColor;
-    else if(currentSignal == SIGNAL_SELL) signalColor = SellSignalColor;
-    else if(currentSignal == SIGNAL_HOLD) signalColor = HoldSignalColor;
+    string signalIcon = "⚪";
     
-    string signalText = StringFormat("📊 Signal: %s (%.1f%%)", 
+    if(currentSignal == SIGNAL_BUY) 
+    {
+        signalColor = clrLime;
+        signalIcon = "🟢";
+    }
+    else if(currentSignal == SIGNAL_SELL) 
+    {
+        signalColor = clrRed; 
+        signalIcon = "🔴";
+    }
+    else if(currentSignal == SIGNAL_HOLD) 
+    {
+        signalColor = clrYellow;
+        signalIcon = "🟡";
+    }
+    
+    string signalText = StringFormat("%s SIGNAL: %s (%.0f%%)", 
+                                     signalIcon,
                                      EnumToString(currentSignal), 
                                      currentConfidence * 100);
     
     ObjectSetString(0, signalName, OBJPROP_TEXT, signalText);
     ObjectSetInteger(0, signalName, OBJPROP_COLOR, signalColor);
-    ObjectSetInteger(0, signalName, OBJPROP_FONTSIZE, 10);
+    ObjectSetInteger(0, signalName, OBJPROP_FONTSIZE, 12);
+    ObjectSetString(0, signalName, OBJPROP_FONT, "Arial Black");
     
-    // Market sentiment
+    // Market sentiment with emoji
     string sentimentName = dashboardPrefix + "Sentiment";
     if(ObjectFind(0, sentimentName) < 0)
         ObjectCreate(0, sentimentName, OBJ_LABEL, 0, 0, 0);
     
-    ObjectSetInteger(0, sentimentName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, sentimentName, OBJPROP_YDISTANCE, DashboardY + 55);
-    ObjectSetString(0, sentimentName, OBJPROP_TEXT, "🎭 Sentiment: " + marketSentiment);
-    ObjectSetInteger(0, sentimentName, OBJPROP_COLOR, clrWhite);
-    ObjectSetInteger(0, sentimentName, OBJPROP_FONTSIZE, 9);
+    ObjectSetInteger(0, sentimentName, OBJPROP_XDISTANCE, DashboardX + 15);
+    ObjectSetInteger(0, sentimentName, OBJPROP_YDISTANCE, DashboardY + 65);
     
-    // Trading status
+    string sentimentEmoji = "😐";
+    if(marketSentiment == "BULLISH") sentimentEmoji = "😊";
+    else if(marketSentiment == "BEARISH") sentimentEmoji = "😟";
+    else if(marketSentiment == "VERY_BULLISH") sentimentEmoji = "🤑";
+    else if(marketSentiment == "VERY_BEARISH") sentimentEmoji = "😰";
+    
+    ObjectSetString(0, sentimentName, OBJPROP_TEXT, sentimentEmoji + " Sentiment: " + marketSentiment);
+    ObjectSetInteger(0, sentimentName, OBJPROP_COLOR, clrWhite);
+    ObjectSetInteger(0, sentimentName, OBJPROP_FONTSIZE, 10);
+    
+    // Trading statistics
     string statusName = dashboardPrefix + "Status";
     if(ObjectFind(0, statusName) < 0)
         ObjectCreate(0, statusName, OBJ_LABEL, 0, 0, 0);
     
-    ObjectSetInteger(0, statusName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, statusName, OBJPROP_YDISTANCE, DashboardY + 75);
+    ObjectSetInteger(0, statusName, OBJPROP_XDISTANCE, DashboardX + 15);
+    ObjectSetInteger(0, statusName, OBJPROP_YDISTANCE, DashboardY + 85);
     
-    string statusText = StringFormat("💰 Trades: %d/%d | Active: %d", 
-                                     dailyTradeCount, MaxDailyTrades, PositionsTotal());
+    string statusText = StringFormat("� Trades: %d/%d | Active: %d | Pending: %d", 
+                                     dailyTradeCount, MaxDailyTrades, 
+                                     PositionsTotal(), OrdersTotal());
     
     ObjectSetString(0, statusName, OBJPROP_TEXT, statusText);
     ObjectSetInteger(0, statusName, OBJPROP_COLOR, clrWhite);
     ObjectSetInteger(0, statusName, OBJPROP_FONTSIZE, 9);
     
-    // Performance
+    // Performance with color coding
     string perfName = dashboardPrefix + "Performance";
     if(ObjectFind(0, perfName) < 0)
         ObjectCreate(0, perfName, OBJ_LABEL, 0, 0, 0);
     
-    ObjectSetInteger(0, perfName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, perfName, OBJPROP_YDISTANCE, DashboardY + 95);
+    ObjectSetInteger(0, perfName, OBJPROP_XDISTANCE, DashboardX + 15);
+    ObjectSetInteger(0, perfName, OBJPROP_YDISTANCE, DashboardY + 105);
     
     double winRate = totalTrades > 0 ? (double)winningTrades / totalTrades * 100 : 0;
-    string perfText = StringFormat("📈 Win Rate: %.1f%% | Profit: $%.2f", winRate, totalProfit);
+    string perfIcon = totalProfit >= 0 ? "📈" : "📉";
+    string perfText = StringFormat("%s Win Rate: %.1f%% | Profit: $%.2f", 
+                                   perfIcon, winRate, totalProfit);
     
     ObjectSetString(0, perfName, OBJPROP_TEXT, perfText);
     ObjectSetInteger(0, perfName, OBJPROP_COLOR, totalProfit >= 0 ? clrLime : clrRed);
-    ObjectSetInteger(0, perfName, OBJPROP_FONTSIZE, 9);
+    ObjectSetInteger(0, perfName, OBJPROP_FONTSIZE, 10);
+    ObjectSetString(0, perfName, OBJPROP_FONT, "Arial Bold");
     
-    // Current price and time
+    // Current price with trend indicator
     string priceName = dashboardPrefix + "Price";
     if(ObjectFind(0, priceName) < 0)
         ObjectCreate(0, priceName, OBJ_LABEL, 0, 0, 0);
     
-    ObjectSetInteger(0, priceName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, priceName, OBJPROP_YDISTANCE, DashboardY + 115);
+    ObjectSetInteger(0, priceName, OBJPROP_XDISTANCE, DashboardX + 15);
+    ObjectSetInteger(0, priceName, OBJPROP_YDISTANCE, DashboardY + 118);
     
-    string priceText = StringFormat("💲 %s: %.5f", Symbol(), currentPrice);
+    string trendIcon = "➡️";
+    static double lastPrice = 0;
+    if(currentPrice > lastPrice) trendIcon = "⬆️";
+    else if(currentPrice < lastPrice) trendIcon = "⬇️";
+    lastPrice = currentPrice;
+    
+    string priceText = StringFormat("%s %s: %.5f", trendIcon, Symbol(), currentPrice);
     ObjectSetString(0, priceName, OBJPROP_TEXT, priceText);
     ObjectSetInteger(0, priceName, OBJPROP_COLOR, clrWhite);
-    ObjectSetInteger(0, priceName, OBJPROP_FONTSIZE, 9);
+    ObjectSetInteger(0, priceName, OBJPROP_FONTSIZE, 10);
     
-    // Last update time
+    // Last update time (WIB = UTC+7)
     string timeName = dashboardPrefix + "Time";
     if(ObjectFind(0, timeName) < 0)
         ObjectCreate(0, timeName, OBJ_LABEL, 0, 0, 0);
     
-    ObjectSetInteger(0, timeName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, timeName, OBJPROP_YDISTANCE, DashboardY + 135);
+    ObjectSetInteger(0, timeName, OBJPROP_XDISTANCE, DashboardX + 15);
+    ObjectSetInteger(0, timeName, OBJPROP_YDISTANCE, DashboardY + 138);
     
-    string timeText = "⏰ " + TimeToString(TimeCurrent(), TIME_SECONDS);
+    // Convert to WIB (UTC+7)
+    datetime wibTime = TimeCurrent() + 7 * 3600; // Add 7 hours for WIB
+    string timeText = "🕐 WIB: " + TimeToString(wibTime, TIME_MINUTES);
     ObjectSetString(0, timeName, OBJPROP_TEXT, timeText);
     ObjectSetInteger(0, timeName, OBJPROP_COLOR, clrSilver);
-    ObjectSetInteger(0, timeName, OBJPROP_FONTSIZE, 8);
-    
-    // Auto trading status
-    string autoName = dashboardPrefix + "AutoTrading";
-    if(ObjectFind(0, autoName) < 0)
-        ObjectCreate(0, autoName, OBJ_LABEL, 0, 0, 0);
-    
-    ObjectSetInteger(0, autoName, OBJPROP_XDISTANCE, DashboardX + 10);
-    ObjectSetInteger(0, autoName, OBJPROP_YDISTANCE, DashboardY + 155);
-    
-    string autoText = EnableAutoTrading ? "🟢 Auto Trading: ON" : "🔴 Auto Trading: OFF";
-    ObjectSetString(0, autoName, OBJPROP_TEXT, autoText);
-    ObjectSetInteger(0, autoName, OBJPROP_COLOR, EnableAutoTrading ? clrLime : clrRed);
-    ObjectSetInteger(0, autoName, OBJPROP_FONTSIZE, 9);
+    ObjectSetInteger(0, timeName, OBJPROP_FONTSIZE, 9);
 }
 
 //+------------------------------------------------------------------+
@@ -964,17 +1040,37 @@ void CalculateMACD(const MqlRates &rates[], double &macd[], double &signal[], do
     int size = ArraySize(rates);
     if(size < 35) return;
     
-    ArrayResize(macd, 1);
-    ArrayResize(signal, 1);
-    ArrayResize(histogram, 1);
+    ArrayResize(macd, 2);
+    ArrayResize(signal, 2);
+    ArrayResize(histogram, 2);
     
-    // Simplified MACD calculation
-    double ema12 = CalculateEMA(rates, 12);
-    double ema26 = CalculateEMA(rates, 26);
+    // Calculate current MACD
+    double ema12_0 = CalculateEMA(rates, 12);
+    double ema26_0 = CalculateEMA(rates, 26);
     
-    macd[0] = ema12 - ema26;
+    macd[0] = ema12_0 - ema26_0;
     signal[0] = macd[0] * 0.8; // Simplified signal line
     histogram[0] = macd[0] - signal[0];
+    
+    // Calculate previous MACD (simplified)
+    if(size >= 36)
+    {
+        MqlRates prevRates[];
+        ArrayCopy(prevRates, rates, 0, 0, size - 1);
+        double ema12_1 = CalculateEMA(prevRates, 12);
+        double ema26_1 = CalculateEMA(prevRates, 26);
+        
+        macd[1] = ema12_1 - ema26_1;
+        signal[1] = macd[1] * 0.8;
+        histogram[1] = macd[1] - signal[1];
+    }
+    else
+    {
+        // If not enough data, use current values
+        macd[1] = macd[0];
+        signal[1] = signal[0];
+        histogram[1] = histogram[0];
+    }
 }
 
 double CalculateEMA(const MqlRates &rates[], int period)
