@@ -1,4 +1,4 @@
-# 🚀 CryptSIST - Sistem Trading Cryptocurrency Berbasis AI
+# 🚀 CryptSIST - Implementasi Agentic AI untuk Trading Cryptocurrency dengan Integrasi MetaTrader 5
 
 > **CryptSIST** (Cryptocurrency Sentiment Intelligence and Signal Trading) adalah sistem trading otomatis untuk cryptocurrency
 
