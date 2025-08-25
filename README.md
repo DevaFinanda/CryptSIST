@@ -596,6 +596,15 @@ GET /signals/{symbol}
 }
 ```
 
+#### **Domo Aplikasi**
+
+MetaTrader 5
+<img width="1919" height="974" alt="image" src="https://github.com/user-attachments/assets/aea4a2b0-7238-43ce-88de-e9220f03c8bc" />
+
+Codingan
+<img width="1919" height="1006" alt="image" src="https://github.com/user-attachments/assets/f4556d74-84ac-4859-b379-3e6f7f6d0fde" />
+
+
 #### **📊 Ringkasan Pasar**
 ```http
 GET /market/overview
