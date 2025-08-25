@@ -596,7 +596,7 @@ GET /signals/{symbol}
 }
 ```
 
-#### **Domo Aplikasi**
+#### **Demo Aplikasi**
 
 MetaTrader 5
 <img width="1919" height="974" alt="image" src="https://github.com/user-attachments/assets/aea4a2b0-7238-43ce-88de-e9220f03c8bc" />
