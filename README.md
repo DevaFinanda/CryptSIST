@@ -869,12 +869,6 @@ test: tambah unit test untuk signal generator
 
 ### **📞 Dukungan & Komunitas**
 
-#### **🆘 Dapatkan Bantuan**
-- 📧 **Email**: cryptsist.support@email.com
-- 💬 **Discord**: [Komunitas CryptSIST](https://discord.gg/cryptsist)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/your-username/CryptSIST/issues)
-- 📖 **Wiki**: [Dokumentasi](https://github.com/your-username/CryptSIST/wiki)
-
 #### **🤝 Panduan Komunitas**
 - ✅ Bersikap sopan dan konstruktif
 - 🚫 Jangan spam atau konten promosi
