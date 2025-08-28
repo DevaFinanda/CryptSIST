@@ -1,4 +1,4 @@
-![Uploading Logo-removebg-preview.png…]()
+<img width="500" height="500" alt="Logo-removebg-preview" src="https://github.com/user-attachments/assets/990ab72b-d728-4a2b-88e1-26823750d2c4" />
 
 
 # 🚀 CryptSIST - Implementasi Agentic AI untuk Trading Cryptocurrency dengan Integrasi MetaTrader 5
